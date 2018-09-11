@@ -12,7 +12,11 @@ data "archive_file" "lambda_package" {
 
 ## create lambda function
 resource "aws_lambda_function" "ebs_attach" {
-  depends_on       = ["aws_cloudwatch_log_group.lambda_log_group"]
+  depends_on = [
+    "aws_cloudwatch_log_group.lambda_log_group",
+    "data.archive_file.lambda_package",
+  ]
+
   filename         = ".terraform/tf-aws-asg-ebs-attach-${md5(file("${path.module}/include/lambda.py"))}.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"

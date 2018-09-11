@@ -14,8 +14,6 @@ variable "asg_tag" {
   description = "ASG tag key to read values from"
 }
 
-variable "envname" {}
-
 variable "lambda_logs_retention_in_days" {
   default = "30"
 }

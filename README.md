@@ -9,7 +9,7 @@ This module does not manage EBS volumes and they need to be created by other mea
 
 Each ASG defined in `autoscaling_group_names` variable has to be tagged with a tag defined in `asg_tag` variable. The value of this tag should be a coma-delimited string containing tag keys on EBS volumes for this autoscaling group.
 
-Value of tags on EBS volume must contain a device name EBS should be attached as. Please see example below.
+Value of tags on EBS volume must contain a device name EBS should be attached as. Please see example below or example folder.
 
 ```hcl
 

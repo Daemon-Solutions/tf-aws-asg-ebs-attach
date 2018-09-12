@@ -110,6 +110,14 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
     vol_ids = [v['VolumeId'] for v in volumes_to_attach]
     logger.info('Volumes to attach: {}'.format(vol_ids))
 
+    # we need instance in running state
+    logger.info('Waiting for instance to be in running state')
+    waiter = ec2_client.get_waiter('instance_running')
+    waiter.config.delay = 1
+    waiter.config.max_attempts = 300
+    waiter.wait(InstanceIds=[instance_id])
+    logger.info('Instance running, proceeding to volume attachement')
+
     # we need all volumes to be in an available state
     logger.info('Waiting for all volumes to be available')
     waiter = ec2_client.get_waiter('volume_available')

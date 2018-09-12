@@ -38,6 +38,7 @@ resource "aws_lambda_function" "ebs_attach" {
 resource "null_resource" "put_cloudwatch_event" {
   triggers {
     source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
+    asg_list         = "${md5(join(",", sort(var.autoscaling_group_names)))}"
   }
 
   depends_on = [

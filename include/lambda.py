@@ -140,9 +140,9 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
 
     # wait until volumes are attached
     attached = ec2_client.get_waiter('volume_in_use')
-    waiter.config.delay = 1
-    waiter.config.max_attempts = 300
-    waiter.wait(
+    attached.config.delay = 1
+    attached.config.max_attempts = 300
+    attached.wait(
         VolumeIds=vol_ids,
         Filters=[
             {

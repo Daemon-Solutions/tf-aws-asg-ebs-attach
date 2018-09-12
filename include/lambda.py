@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import boto3
-import botocore
 import os
 import logging
 import sys

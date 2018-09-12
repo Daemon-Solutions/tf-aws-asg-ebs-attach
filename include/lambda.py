@@ -100,7 +100,10 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
                 logger.info('Volume {} already attached to {}'.format(vol['VolumeId'], instance_id))
                 continue
             else:
+                # volume might be still detaching from previous instance
+                # and we should include it in a list of volumes to attach
                 logger.debug('Volume {} is attached to wrong instance {}'.format(vol['VolumeId'], attached_to))
+                volumes_to_attach.append(vol)
         else:
             volumes_to_attach.append(vol)
 

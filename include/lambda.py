@@ -188,7 +188,8 @@ def lambda_handler(event, context):
         # If no attachments then it means volumes were already attached
         # so there is not need to complete lifecycle action because the instance
         # is already in service.
-        if attachments:
+        # If event was put by trigger then it won't have LifecycleActionToken
+        if attachments and event['detail'].has_key('LifecycleActionToken'):
             asg_client.complete_lifecycle_action(
                 LifecycleHookName=event['detail']['LifecycleHookName'],
                 AutoScalingGroupName=event['detail']['AutoScalingGroupName'],

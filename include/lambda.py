@@ -6,7 +6,7 @@ import logging
 import sys
 
 # get logger
-logger = logging.getLogger()
+logger = logging.getLogger('lambda-ebs-attach')
 logger.setLevel(os.environ['LOG_LEVEL'].upper())
 
 # tag key identifying volumes we should look for
@@ -96,9 +96,11 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
         if vol['Attachments']:
             attached_to = vol['Attachments'][0]['InstanceId']
             if attached_to == instance_id:
+                # volume is already attached to the correct instance
                 logger.info('Volume {} already attached to {}'.format(vol['VolumeId'], instance_id))
+                continue
             else:
-                logger.info('Volume {} is attached to wrong instance {}'.format(vol['VolumeId'], attached_to))
+                logger.debug('Volume {} is attached to wrong instance {}'.format(vol['VolumeId'], attached_to))
         else:
             volumes_to_attach.append(vol)
 
@@ -107,23 +109,23 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
         return []
 
     vol_ids = [v['VolumeId'] for v in volumes_to_attach]
-    logger.info('Volumes to attach: {}'.format(vol_ids))
+    logger.debug('Volumes to attach: {}'.format(vol_ids))
 
     # we need instance in running state
-    logger.info('Waiting for instance to be in running state')
+    logger.debug('Waiting for instance to be in running state')
     instance_waiter = ec2_client.get_waiter('instance_running')
     instance_waiter.config.delay = 1
     instance_waiter.config.max_attempts = 300
     instance_waiter.wait(InstanceIds=[instance_id])
-    logger.info('Instance running, proceeding to volume attachement')
+    logger.debug('Instance running, proceeding to volume attachement')
 
     # we need all volumes to be in an available state
-    logger.info('Waiting for all volumes to be available')
+    logger.debug('Waiting for all volumes to be available')
     volume_waiter = ec2_client.get_waiter('volume_available')
     volume_waiter.config.delay = 1
     volume_waiter.config.max_attempts = 300
     volume_waiter.wait(VolumeIds=vol_ids)
-    logger.info('All volumes are available. Attaching volumes.')
+    logger.debug('All volumes are available. Attaching volumes.')
 
     for ebs in volumes_to_attach:
         vol_id = ebs['VolumeId']
@@ -159,7 +161,7 @@ def lambda_handler(event, context):
     Lambda handler function
     """
 
-    logger.info('Event: {}'.format(event))
+    logger.debug('Event: {}'.format(event))
 
     detail_types = ['EC2 Instance-launch Lifecycle Action', "Lambda EBS Attach Trigger"]
     if event['detail-type'] in detail_types:
@@ -169,10 +171,10 @@ def lambda_handler(event, context):
         instance_id = event['detail']['EC2InstanceId']
         asg_name = event['detail']['AutoScalingGroupName']
         instance_data = ec2_client.describe_instances(InstanceIds=[instance_id])
-        logger.info('Instance Data: {}'.format(instance_data))
+        logger.debug('Instance Data: {}'.format(instance_data))
 
         ebs_tag_keys = parse_asg_tag(asg_name)
-        logger.info('EBS tag keys: {}'.format(ebs_tag_keys))
+        logger.debug('EBS tag keys: {}'.format(ebs_tag_keys))
 
         az = instance_data['Reservations'][0]['Instances'][0]['Placement']['AvailabilityZone']
         attachments = attach_volumes(ebs_tag_keys, instance_id, az)

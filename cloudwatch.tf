@@ -12,7 +12,7 @@ resource "aws_cloudwatch_event_rule" "ebs_attach_rule" {
     "Lambda EBS Attach Trigger"
   ],
   "detail": {
-    "AutoScalingGroupName": ${jsonencode(var.autoscaling_group_names)}
+    "AutoScalingGroupName": ${jsonencode(sort(var.autoscaling_group_names))}
   }
 }
 PATTERN

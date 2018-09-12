@@ -189,7 +189,7 @@ def lambda_handler(event, context):
         # so there is not need to complete lifecycle action because the instance
         # is already in service.
         # If event was put by trigger then it won't have LifecycleActionToken
-        if attachments and event['detail'].has_key('LifecycleActionToken'):
+        if attachments and 'LifecycleActionToken' in event['detail']:
             asg_client.complete_lifecycle_action(
                 LifecycleHookName=event['detail']['LifecycleHookName'],
                 AutoScalingGroupName=event['detail']['AutoScalingGroupName'],

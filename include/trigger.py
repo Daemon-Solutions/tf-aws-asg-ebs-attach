@@ -36,16 +36,16 @@ for asg in asgs['AutoScalingGroups']:
     for instance in instances:
         entries.append(
             {
-                "Time": datetime.now(),
-                "Detail": json.dumps(
+                'Time': datetime.now(),
+                'Detail': json.dumps(
                     {
-                        "AutoScalingGroupName": asg_name,
-                        "LifecycleHookName": "lambda-ebs-attach",
-                        "EC2InstanceId": instance,
-                        "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING"
+                        'AutoScalingGroupName': asg_name,
+                        'LifecycleHookName': 'lambda-ebs-attach',
+                        'EC2InstanceId': instance,
+                        'LifecycleTransition': 'autoscaling:EC2_INSTANCE_LAUNCHING'
                     }
                 ),
-                "DetailType": "Lambda EBS Attach Trigger",
+                'DetailType': 'Lambda EBS Attach Trigger',
                 'Resources': [asg_arn],
                 'Source': 'lambda_ebs.trigger'
             }

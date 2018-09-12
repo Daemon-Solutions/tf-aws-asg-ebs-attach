@@ -42,7 +42,9 @@ resource "null_resource" "put_cloudwatch_event" {
   }
 
   depends_on = [
+    "aws_cloudwatch_event_rule.ebs_attach_rule",
     "aws_cloudwatch_event_target.ebs_attach",
+    "aws_autoscaling_lifecycle_hook.aws_autoscaling_lifecycle_hook",
     "aws_lambda_function.ebs_attach",
   ]
 

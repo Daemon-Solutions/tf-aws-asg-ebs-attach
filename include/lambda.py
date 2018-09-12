@@ -151,8 +151,6 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
             }
         ]
     )
-    logger.info('Volumes {} attached to {}'.format(vol_ids, instance_id))
-
 
     return attachments
 

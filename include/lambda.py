@@ -73,7 +73,7 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
     Attach EBS volumes and waits until they are attached
     """
 
-    attachements = []
+    attachments = []
 
     volume_filters = [
         {
@@ -136,7 +136,7 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
             VolumeId=vol_id,
             DryRun=False
         )
-        attachements.append(response)
+        attachments.append(response)
 
     # wait until volumes are attached
     attached = ec2_client.get_waiter('volume_in_use')
@@ -151,10 +151,10 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
             }
         ]
     )
-
     logger.info('Volumes {} attached to {}'.format(vol_ids, instance_id))
 
-    return attachements
+
+    return attachments
 
 
 def lambda_handler(event, context):

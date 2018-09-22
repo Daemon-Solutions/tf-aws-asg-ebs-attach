@@ -49,6 +49,6 @@ resource "null_resource" "put_cloudwatch_event" {
   ]
 
   provisioner "local-exec" {
-    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name}"
+    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
   }
 }

@@ -4,10 +4,15 @@ import boto3
 import os
 import logging
 import sys
+import re
 
 # get logger
 logger = logging.getLogger('lambda-ebs-attach')
 logger.setLevel(os.environ['LOG_LEVEL'].upper())
+
+# ssm document name
+SSM_DOCUMENT_NAME = os.environ['SSM_DOCUMENT_NAME']
+SSM_ENABLED = os.environ['SSM_ENABLED'].lower() in ["true"]
 
 # tag key identifying volumes we should look for
 ASG_TAG = os.environ['ASG_TAG']
@@ -21,6 +26,7 @@ AWS_REGION = os.environ['AWS_DEFAULT_REGION']
 # clients
 ec2_client = boto3.client('ec2', region_name=AWS_REGION)
 asg_client = boto3.client('autoscaling', region_name=AWS_REGION)
+ssm_client = boto3.client('ssm', region_name=AWS_REGION)
 
 
 class BadHTTPStatusCode(Exception):
@@ -28,6 +34,18 @@ class BadHTTPStatusCode(Exception):
 
 
 class NoMatchingVolumesFound(Exception):
+    pass
+
+
+class MisformattedVolumeTag(Exception):
+    pass
+
+
+class MissingValueInVolumeTag(Exception):
+    pass
+
+
+class InvalidMountPoint(Exception):
     pass
 
 
@@ -65,6 +83,41 @@ def parse_asg_tag(asg_name):
     ebs_tag_keys = [tag['Value'].split(',') for tag in tags if tag['Key'] == ASG_TAG][0]
 
     return ebs_tag_keys
+
+
+def parse_validate_volume_tag(tag):
+        # example tag "device=xvdf,mountpoint=/app/data,label=DATA"
+    try:
+        tag_dict = {d.split('=')[0]:d.split('=')[1] for d in tag.split(',')}
+    except IndexError:
+        raise MisformattedVolumeTag('Error: {}'.format(tag))
+
+    if 'device' not in tag_dict or '' in tag_dict.values():
+        raise MissingValueInVolumeTag('Error: {}'.format(tag))
+
+    if 'mountpoint' in tag_dict:
+        if not re.match('^\/[^\/]+.*', tag_dict['mountpoint']):
+            raise InvalidMountPoint('Error: {}'.format(mountpoint))
+
+    return tag_dict
+
+
+def send_command(instance_id, device_info):
+    """
+    Send SSM command that will format and mount disk
+    """
+    parameters = {'device': [device_info['device']]}
+    for param in ('label', 'mountpoint'):
+        if param in device_info:
+            parameters.update({param: [device_info[param]]})
+
+    options = {
+        'InstanceIds': [instance_id],
+        'DocumentName': SSM_DOCUMENT_NAME,
+        'Parameters': parameters
+    }
+    logger.debug('Sending SSM command to {}: {}'.format(instance_id, options))
+    response = ssm_client.send_command(**options)
 
 
 def attach_volumes(ebs_tag_keys, instance_id, az):
@@ -130,12 +183,19 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
     volume_waiter.wait(VolumeIds=vol_ids)
     logger.debug('All volumes are available. Attaching volumes.')
 
+    disks_to_manage = []
     for ebs in volumes_to_attach:
         vol_id = ebs['VolumeId']
-        device = [tag['Value'] for tag in ebs['Tags'] if tag['Key'] in ebs_tag_keys][0]
+        vol_tag = [tag['Value'] for tag in ebs['Tags'] if tag['Key'] in ebs_tag_keys][0]
+        logger.debug('Found volume tag: {}'.format(vol_tag))
+        device_info = parse_validate_volume_tag(vol_tag)
+        logger.debug('Parsed device information: {}'.format(device_info))
+        if SSM_ENABLED:
+            if 'label' in device_info or 'mountpoint' in device_info:
+                disks_to_manage.append(device_info)
 
         response = ec2_client.attach_volume(
-            Device=device,
+            Device=device_info['device'],
             InstanceId=instance_id,
             VolumeId=vol_id,
             DryRun=False
@@ -155,6 +215,9 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
             }
         ]
     )
+    logger.debug('disks_to_manage: {}'.format(disks_to_manage))
+    for disk in disks_to_manage:
+        send_command(instance_id, disk)
 
     return attachments
 

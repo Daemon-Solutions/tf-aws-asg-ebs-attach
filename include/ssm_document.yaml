@@ -1,0 +1,47 @@
+---
+schemaVersion: '2.2'
+description: Manage Disk
+parameters:
+  device:
+    type: String
+    description: "(Required) Device Name to format"
+    minChars: 3
+  mountpoint:
+    type: String
+    description: "(Optional) Mountpoint for a partition"
+    default: none
+    minChars: 2
+  label:
+    type: String
+    description: "(Optional) Label for a partition"
+    default: none
+    minChars: 1
+mainSteps:
+- action: aws:runShellScript
+  name: ManageDisk
+  inputs:
+    runCommand:
+    - DEVICE="/dev/$(basename {{ device }})"
+    - counter=0
+    - # give udev time to create block device
+    - while ! test -b ${DEVICE} && test ${counter} -lt 10; do
+    -   sleep 1
+    -   let counter++
+    - done
+    - if [ "$(/sbin/blkid ${DEVICE})" == '' ];  then
+    -   /sbin/parted --script ${DEVICE} mklabel gpt
+    -   /sbin/parted --script ${DEVICE} mkpart primary xfs 1 -- -1
+    -   /sbin/mkfs.xfs ${DEVICE}1
+    -   if [ "{{ label }}" != 'none' ]; then
+    -     /sbin/xfs_admin -L {{ label }} ${DEVICE}1
+    -   fi
+    - fi
+    - if [ "{{ mountpoint }}" != 'none' ]; then
+    -   test -d {{ mountpoint }} || mkdir -p {{ mountpoint }}
+    -   if [ "{{ label }}" != 'none' ]; then
+    -     grep -q {{ mountpoint }} /etc/fstab || echo "LABEL={{ label }}  {{ mountpoint }} xfs defaults 0 0" >> /etc/fstab
+    -   else
+    -     grep -q {{ mountpoint }} /etc/fstab || echo "${DEVICE}1  {{ mountpoint }} xfs defaults 0 0" >> /etc/fstab
+    -   fi
+    -   findmnt {{ mountpoint }} || mount {{ mountpoint }}
+    - fi

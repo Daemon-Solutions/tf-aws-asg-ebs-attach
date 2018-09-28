@@ -88,7 +88,7 @@ def parse_asg_tag(asg_name):
 def parse_validate_volume_tag(tag):
         # example tag "device=xvdf,mountpoint=/app/data,label=DATA"
     try:
-        tag_dict = {d.split('=')[0]:d.split('=')[1] for d in tag.split(',')}
+        tag_dict = dict(d.split('=') for d in tag.split(','))
     except IndexError:
         raise MisformattedVolumeTag('Error: {}'.format(tag))
 

@@ -23,7 +23,7 @@ module "ebs_attach_asg" {
   envname = "ebs-attach"
   service = "ebs-attach"
   ami_id  = "ami-0bdb1d6c15a40392c"
-  subnets = ["${slice(module.ebs_attach_vpc.private_subnets, 0, 2)}"]
+  subnets = ["${element(module.ebs_attach_vpc.private_subnets, 0)}"]
 
   security_groups = [
     "${aws_security_group.ebs_attach.id}",
@@ -32,8 +32,8 @@ module "ebs_attach_asg" {
   iam_instance_profile = "${module.ebs_attach_iam.profile_id}"
   instance_type        = "t2.micro"
   user_data            = "#!/bin/bash\nyum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\nsystemctl enable --now amazon-ssm-agent\n"
-  min                  = "2"
-  max                  = "2"
+  min                  = "1"
+  max                  = "1"
 
   extra_tags = [
     {

@@ -1,5 +1,5 @@
 module "ebs_attach" {
-  source               = "git::ssh://git@gogs.bashton.net/Bashton-Terraform-Modules/tf-aws-asg-ebs-attach.git"
+  source               = "../"
   lambda_function_name = "lambda-ebs-attach"
 
   autoscaling_group_names = [
@@ -25,12 +25,12 @@ resource "aws_ebs_volume" "ebs2" {
   size              = 1
 
   tags {
-    ebs_data_disk_1 = "device=xvdg,mountpoint=/app/xvdg,label=XVDG"
+    ebs_data_disk_1 = "device=xvdg,mountpoint=/app/xvdg"
   }
 }
 
 resource "aws_ebs_volume" "ebs3" {
-  availability_zone = "eu-west-1b"
+  availability_zone = "eu-west-1a"
   size              = 1
 
   tags {

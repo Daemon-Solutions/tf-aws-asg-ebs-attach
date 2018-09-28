@@ -97,7 +97,7 @@ def parse_validate_volume_tag(tag):
 
     if 'mountpoint' in tag_dict:
         if not re.match('^\/[^\/]+.*', tag_dict['mountpoint']):
-            raise InvalidMountPoint('Error: {}'.format(mountpoint))
+            raise InvalidMountPoint('Error: {}'.format(tag))
 
     return tag_dict
 

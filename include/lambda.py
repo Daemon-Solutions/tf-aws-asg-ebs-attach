@@ -12,7 +12,7 @@ logger.setLevel(os.environ['LOG_LEVEL'].upper())
 
 # ssm document name
 SSM_DOCUMENT_NAME = os.environ['SSM_DOCUMENT_NAME']
-SSM_ENABLED = os.environ['SSM_ENABLED'].lower() in ["true"]
+SSM_ENABLED = os.environ['SSM_ENABLED'].lower() == "true"
 
 # tag key identifying volumes we should look for
 ASG_TAG = os.environ['ASG_TAG']

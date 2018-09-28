@@ -49,7 +49,7 @@ class MisformattedVolumeTag(Exception):
     pass
 
 
-class MissingValueInVolumeTag(Exception):
+class MissingValueInVolumeTagKey(Exception):
     pass
 
 
@@ -119,7 +119,7 @@ def parse_validate_volume_tag(tag):
 
     # all keys should have values
     if '' in tag_dict.values():
-        raise MissingValueInVolumeTag('Error: {}'.format(tag))
+        raise MissingValueInVolumeTagKey('Error: {}'.format(tag))
 
     # mountpoint value should be absolute path
     if 'mountpoint' in tag_dict:

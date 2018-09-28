@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 
-import boto3
-import os
 import logging
-import sys
+import os
 import re
+import sys
+import time
+
+import boto3
+from botocore.exceptions import ClientError
+
 
 # get logger
 logger = logging.getLogger('lambda-ebs-attach')
@@ -54,6 +58,10 @@ class InvalidMountPoint(Exception):
 
 
 class InvalidTagKeyFound(Exception):
+    pass
+
+
+class SsmCommandFailed(Exception):
     pass
 
 
@@ -107,7 +115,7 @@ def parse_validate_volume_tag(tag):
 
     # device key is required
     if 'device' not in tag_dict:
-        raise MissingDeviceDefinition('Error: `device` key is required: {}'.format(tag))
+        raise MissingDeviceDefinition('Error: "device" key is required: {}'.format(tag))
 
     # all keys should have values
     if '' in tag_dict.values():
@@ -132,8 +140,35 @@ def send_command(instance_id, device_info):
         'DocumentName': SSM_DOCUMENT_NAME,
         'Parameters': parameters
     }
+
     logger.debug('Sending SSM command to {}: {}'.format(instance_id, options))
     response = ssm_client.send_command(**options)
+
+    return response['Command']['CommandId']
+
+
+def wait_for_command(instance_id, command_id):
+    """
+    Wait for SSM command invocation to finish
+    Return True if success, else raise exception
+    """
+
+    result = {'Status': 'Pending'}
+
+    while result['Status'] in ('Pending', 'InProgress', 'Delayed'):
+        time.sleep(0.25)
+        try:
+            result = ssm_client.get_command_invocation(
+                CommandId=command_id,
+                InstanceId=instance_id,
+            )
+        except ClientError:
+            pass
+
+    if result['Status'] != 'Success':
+        raise SsmCommandFailed('Error: {}'.format(result))
+
+    return result
 
 
 def attach_volumes(ebs_tag_keys, instance_id, az):
@@ -231,9 +266,14 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
             }
         ]
     )
+
     logger.debug('disks_to_manage: {}'.format(disks_to_manage))
+
     for disk in disks_to_manage:
-        send_command(instance_id, disk)
+        command_id = send_command(instance_id, disk)
+        result = wait_for_command(instance_id, command_id)
+        logger.info('Management of {} on {} completed successfully'.format(disk['device'], instance_id))
+        logger.debug('SSM command output: {}'.format(result['StandardOutputContent']))
 
     return attachments
 

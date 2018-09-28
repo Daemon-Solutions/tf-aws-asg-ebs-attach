@@ -37,6 +37,10 @@ class NoMatchingVolumesFound(Exception):
     pass
 
 
+class MissingDeviceDefinition(Exception):
+    pass
+
+
 class MisformattedVolumeTag(Exception):
     pass
 
@@ -46,6 +50,10 @@ class MissingValueInVolumeTag(Exception):
 
 
 class InvalidMountPoint(Exception):
+    pass
+
+
+class InvalidTagKeyFound(Exception):
     pass
 
 
@@ -92,9 +100,20 @@ def parse_validate_volume_tag(tag):
     except IndexError:
         raise MisformattedVolumeTag('Error: {}'.format(tag))
 
-    if 'device' not in tag_dict or '' in tag_dict.values():
+    # check for any invalid keys
+    for key in tag_dict:
+        if key not in ('device', 'label', 'mountpoint'):
+            raise InvalidTagKeyFound('Error: Allowed tag keys are "device", "label" and "mountpoint". Got {}'.format(tag))
+
+    # device key is required
+    if 'device' not in tag_dict:
+        raise MissingDeviceDefinition('Error: `device` key is required: {}'.format(tag))
+
+    # all keys should have values
+    if '' in tag_dict.values():
         raise MissingValueInVolumeTag('Error: {}'.format(tag))
 
+    # mountpoint value should be absolute path
     if 'mountpoint' in tag_dict:
         if not re.match('^\/[^\/]+.*', tag_dict['mountpoint']):
             raise InvalidMountPoint('Error: {}'.format(tag))
@@ -106,11 +125,8 @@ def send_command(instance_id, device_info):
     """
     Send SSM command that will format and mount disk
     """
-    parameters = {'device': [device_info['device']]}
-    for param in ('label', 'mountpoint'):
-        if param in device_info:
-            parameters.update({param: [device_info[param]]})
 
+    parameters = {key: [value] for key, value in device_info.items()}
     options = {
         'InstanceIds': [instance_id],
         'DocumentName': SSM_DOCUMENT_NAME,

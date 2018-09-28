@@ -17,15 +17,6 @@ resource "aws_security_group_rule" "egress" {
   security_group_id = "${aws_security_group.ebs_attach.id}"
 }
 
-resource "aws_security_group_rule" "ingress" {
-  type              = "ingress"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.ebs_attach.id}"
-}
-
 module "ebs_attach_asg" {
   source  = "git::ssh://git@gogs.bashton.net/Bashton-Terraform-Modules/tf-aws-asg.git"
   name    = "ebs-attach"

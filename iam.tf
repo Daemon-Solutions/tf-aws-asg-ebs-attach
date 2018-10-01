@@ -69,3 +69,37 @@ resource "aws_iam_role_policy" "lambda_ebs_attach_policy" {
 }
 EOF
 }
+
+# Lambda policy for running ssm
+resource "aws_iam_role_policy" "lambda_ssm_policy" {
+  count       = "${var.enable_ssm}"
+  name_prefix = "lambda-ebs-attach"
+  role        = "${aws_iam_role.lambda_role.id}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:SendCommand"
+      ],
+      "Resource": [
+          "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
+          "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/${aws_ssm_document.ssm.name}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetCommandInvocation"
+      ],
+      "Resource": [
+          "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
+      ]
+    }
+  ]
+}
+EOF
+}

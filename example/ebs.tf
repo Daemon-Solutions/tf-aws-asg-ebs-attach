@@ -1,12 +1,14 @@
 module "ebs_attach" {
-  source               = "git::ssh://git@gogs.bashton.net/Bashton-Terraform-Modules/tf-aws-asg-ebs-attach.git"
+  source               = "../"
   lambda_function_name = "lambda-ebs-attach"
 
   autoscaling_group_names = [
     "${module.ebs_attach_asg.asg_name}",
   ]
 
-  asg_tag = "ebs_volumes"
+  asg_tag          = "ebs_volumes"
+  lambda_log_level = "DEBUG"
+  enable_ssm       = true
 }
 
 resource "aws_ebs_volume" "ebs1" {
@@ -14,7 +16,7 @@ resource "aws_ebs_volume" "ebs1" {
   size              = 1
 
   tags {
-    ebs_data_disk_0 = "xvdf"
+    ebs_data_disk_0 = "device=/dev/xvdf,mountpoint=/app/xvdf,label=XVDF"
   }
 }
 
@@ -23,7 +25,7 @@ resource "aws_ebs_volume" "ebs2" {
   size              = 1
 
   tags {
-    ebs_data_disk_1 = "xvdg"
+    ebs_data_disk_1 = "device=xvdg,mountpoint=/app/xvdg"
   }
 }
 
@@ -32,6 +34,6 @@ resource "aws_ebs_volume" "ebs3" {
   size              = 1
 
   tags {
-    ebs_logs_disk_0 = "xvdh"
+    ebs_data_disk_0 = "device=xvdh"
   }
 }

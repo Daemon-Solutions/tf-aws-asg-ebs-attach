@@ -26,3 +26,24 @@ variable "lambda_log_level" {
 variable "lifecycle_hook_name" {
   default = "lambda-ebs-attach"
 }
+
+variable "enable_ssm" {
+  description = "Whether to enable creation of ssm document"
+  default     = false
+}
+
+variable "ssm_document_name" {
+  default = "tf-aws-asg-attach-mangage-disk"
+}
+
+variable "ssm_document_format" {
+  description = "SSM document format. Possible values are YAML and JSON"
+  type        = "string"
+  default     = "YAML"
+}
+
+variable "ssm_document_path" {
+  description = "Path to the SSM document"
+  type        = "string"
+  default     = ""
+}

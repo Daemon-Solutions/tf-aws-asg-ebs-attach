@@ -31,6 +31,8 @@ resource "aws_lambda_function" "ebs_attach" {
       LOG_LEVEL           = "${var.lambda_log_level}"
       ASG_TAG             = "${var.asg_tag}"
       LIFECYCLE_HOOK_NAME = "${var.lifecycle_hook_name}"
+      SSM_DOCUMENT_NAME   = "${var.ssm_document_name}"
+      SSM_ENABLED         = "${var.enable_ssm ? "true" : "false"}"
     }
   }
 }
@@ -49,6 +51,6 @@ resource "null_resource" "put_cloudwatch_event" {
   ]
 
   provisioner "local-exec" {
-    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name}"
+    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
   }
 }

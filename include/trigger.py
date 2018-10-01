@@ -20,10 +20,11 @@ logger.addHandler(ch)
 asgs = sys.argv[1].split(',')
 # asg lifecycle hook name
 lifecycle_hook_name = sys.argv[2]
+region_name = sys.argv[3]
 
 # client
-cloudwatch_events = boto3.client('events')
-asg_client = boto3.client('autoscaling')
+cloudwatch_events = boto3.client('events', region_name=region_name)
+asg_client = boto3.client('autoscaling', region_name=region_name)
 
 asgs = asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=asgs)
 logger.debug('Auto Scaling Groups: {}'.format(asgs))

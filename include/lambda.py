@@ -129,6 +129,17 @@ def parse_validate_volume_tag(tag):
     return tag_dict
 
 
+def ssm_online_waiter(instance_id):
+    filters = [{'Key': 'InstanceIds', 'Values': [instance_id]}]
+    status = None
+    while status != 'Online':
+        time.sleep(0.25)
+        response = ssm_client.describe_instance_information(Filters=filters)
+        if response['InstanceInformationList']:
+            status = response['InstanceInformationList'][0].get('PingStatus')
+    return True
+
+
 def send_command(instance_id, device_info):
     """
     Send SSM command that will format and mount disk
@@ -269,11 +280,14 @@ def attach_volumes(ebs_tag_keys, instance_id, az):
 
     logger.debug('disks_to_manage: {}'.format(disks_to_manage))
 
-    for disk in disks_to_manage:
-        command_id = send_command(instance_id, disk)
-        result = wait_for_command(instance_id, command_id)
-        logger.info('Management of {} on {} completed successfully'.format(disk['device'], instance_id))
-        logger.debug('SSM command output: {}'.format(result['StandardOutputContent']))
+    if disks_to_manage:
+        logger.debug('Waiting for instance to come online in SSM')
+        ssm_online_waiter(instance_id)
+        for disk in disks_to_manage:
+            command_id = send_command(instance_id, disk)
+            result = wait_for_command(instance_id, command_id)
+            logger.info('Management of {} on {} completed successfully'.format(disk['device'], instance_id))
+            logger.debug('SSM command output: {}'.format(result['StandardOutputContent']))
 
     return attachments
 

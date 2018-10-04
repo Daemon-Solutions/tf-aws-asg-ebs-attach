@@ -40,7 +40,7 @@ resource "aws_lambda_function" "ebs_attach" {
 resource "null_resource" "put_cloudwatch_event" {
   triggers {
     source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
-    asg_list         = "${md5(join(",", sort(var.autoscaling_group_names)))}"
+    asg              = "${var.autoscaling_group_name}"
   }
 
   depends_on = [
@@ -51,6 +51,6 @@ resource "null_resource" "put_cloudwatch_event" {
   ]
 
   provisioner "local-exec" {
-    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
+    command = "${path.module}/include/trigger.py ${var.autoscaling_group_name} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
   }
 }

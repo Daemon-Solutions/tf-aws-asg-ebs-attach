@@ -6,7 +6,7 @@ Instance is placed in `pending:wait` state until volume(s) are attached, failure
 
 This module does not manage EBS volumes and they need to be created by other means.
 
-Each ASG defined in `autoscaling_group_names` variable has to be tagged with a tag defined in `asg_tag` variable. The value of this tag should be a coma-delimited string containing tag keys on EBS volumes for this autoscaling group.
+ASG defined in `autoscaling_group_name` variable has to be tagged with a tag defined in `asg_tag` variable. The value of this tag should be a coma-delimited string containing tag keys on EBS volumes for this autoscaling group.
 
 Value of a tag on an EBS volume must contain a coma-delimited values:
 - `device=xvdf` - required

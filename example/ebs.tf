@@ -1,14 +1,10 @@
 module "ebs_attach" {
-  source               = "../"
-  lambda_function_name = "lambda-ebs-attach"
-
-  autoscaling_group_names = [
-    "${module.ebs_attach_asg.asg_name}",
-  ]
-
-  asg_tag          = "ebs_volumes"
-  lambda_log_level = "DEBUG"
-  enable_ssm       = true
+  source                 = "../"
+  lambda_function_name   = "lambda-ebs-attach"
+  autoscaling_group_name = "${module.ebs_attach_asg.asg_name}"
+  asg_tag                = "ebs_volumes"
+  lambda_log_level       = "DEBUG"
+  enable_ssm             = true
 }
 
 resource "aws_ebs_volume" "ebs1" {

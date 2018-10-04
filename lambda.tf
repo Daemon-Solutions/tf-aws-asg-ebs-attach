@@ -7,7 +7,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 data "archive_file" "lambda_package" {
   type        = "zip"
   source_file = "${path.module}/include/lambda.py"
-  output_path = "${path.cwd}/.terraform/tf-aws-asg-ebs-attach-${md5(file("${path.module}/include/lambda.py"))}.zip"
+  output_path = "${path.cwd}/.terraform/tf-aws-asg-ebs-attach-${var.lambda_function_name}-${md5(file("${path.module}/include/lambda.py"))}.zip"
 }
 
 ## create lambda function
@@ -17,7 +17,7 @@ resource "aws_lambda_function" "ebs_attach" {
     "data.archive_file.lambda_package",
   ]
 
-  filename         = ".terraform/tf-aws-asg-ebs-attach-${md5(file("${path.module}/include/lambda.py"))}.zip"
+  filename         = ".terraform/tf-aws-asg-ebs-attach-${var.lambda_function_name}-${md5(file("${path.module}/include/lambda.py"))}.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"
   role             = "${aws_iam_role.lambda_role.arn}"
@@ -40,7 +40,7 @@ resource "aws_lambda_function" "ebs_attach" {
 resource "null_resource" "put_cloudwatch_event" {
   triggers {
     source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
-    asg_list         = "${md5(join(",", sort(var.autoscaling_group_names)))}"
+    asg              = "${var.autoscaling_group_name}"
   }
 
   depends_on = [
@@ -51,6 +51,6 @@ resource "null_resource" "put_cloudwatch_event" {
   ]
 
   provisioner "local-exec" {
-    command = "${path.module}/include/trigger.py ${join(",", var.autoscaling_group_names)} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
+    command = "${path.module}/include/trigger.py ${var.autoscaling_group_name} ${var.lifecycle_hook_name} ${data.aws_region.current.name}"
   }
 }

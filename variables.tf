@@ -1,14 +1,9 @@
 variable "lambda_function_name" {}
 
-variable "autoscaling_group_names" {
-  type        = "list"
+variable "autoscaling_group_name" {
+  type        = "string"
   description = "Name of the AutoscalingGroup to attach this Lambda function to"
 }
-
-# variable "autoscaling_group_arns" {
-#   type        = "list"
-#   description = "ARNs of the AutoscalingGroup to attach this Lambda function to"
-# }
 
 variable "asg_tag" {
   description = "ASG tag key to read values from"

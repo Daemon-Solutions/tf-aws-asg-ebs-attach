@@ -28,11 +28,10 @@ resource "aws_lambda_function" "ebs_attach" {
 
   environment = {
     variables = {
-      LOG_LEVEL           = "${var.lambda_log_level}"
-      ASG_TAG             = "${var.asg_tag}"
-      LIFECYCLE_HOOK_NAME = "${var.lifecycle_hook_name}"
-      SSM_DOCUMENT_NAME   = "${var.ssm_document_name}"
-      SSM_ENABLED         = "${var.enable_ssm ? "true" : "false"}"
+      LOG_LEVEL         = "${var.lambda_log_level}"
+      ASG_TAG           = "${var.asg_tag}"
+      SSM_DOCUMENT_NAME = "${var.ssm_document_name}"
+      SSM_ENABLED       = "${var.enable_ssm ? "true" : "false"}"
     }
   }
 }

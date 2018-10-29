@@ -21,9 +21,6 @@ SSM_ENABLED = os.environ['SSM_ENABLED'].lower() == "true"
 # tag key identifying volumes we should look for
 ASG_TAG = os.environ['ASG_TAG']
 
-# the name of the lifecycle hook this function should process
-LIFECYCLE_HOOK_NAME = os.environ['LIFECYCLE_HOOK_NAME']
-
 # get current region, it is in ENV by default
 AWS_REGION = os.environ['AWS_DEFAULT_REGION']
 
@@ -301,9 +298,6 @@ def lambda_handler(event, context):
 
     detail_types = ['EC2 Instance-launch Lifecycle Action', "Lambda EBS Attach Trigger"]
     if event['detail-type'] in detail_types:
-        if event['detail']['LifecycleHookName'] != LIFECYCLE_HOOK_NAME:
-            logger.info('Not my concern, exiting.')
-            sys.exit(0)
         instance_id = event['detail']['EC2InstanceId']
         asg_name = event['detail']['AutoScalingGroupName']
         instance_data = ec2_client.describe_instances(InstanceIds=[instance_id])

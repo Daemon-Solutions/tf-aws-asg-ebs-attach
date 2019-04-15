@@ -10,6 +10,7 @@ data "aws_iam_policy_document" "ebs_lambda" {
       "ec2:DescribeInstances",
       "autoscaling:CompleteLifecycleAction",
       "autoscaling:Describe*",
+      "kms:CreateGrant",
     ]
 
     resources = [

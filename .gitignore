@@ -1,4 +1,5 @@
 .vscode
-**/.terraform
+.terraform/
 *.tfstate
 *.tfstate.backup
+.test-data/

@@ -13,6 +13,11 @@ data "aws_ami" "ami" {
     name   = "architecture"
     values = ["x86_64"]
   }
+
+  filter {
+    name   = "description"
+    values = ["Amazon Linux 2 AMI 2* x86_64 HVM gp2"]
+  }
 }
 
 provider "aws" {

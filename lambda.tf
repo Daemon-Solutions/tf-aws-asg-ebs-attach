@@ -8,7 +8,7 @@ module "lambda" {
   timeout       = 300
   source_path   = "${path.module}/include/lambda.py"
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.ebs_lambda.json}"
+  policy        = "${data.aws_iam_policy_document.lambda_policy.json}"
 
   environment {
     variables {
@@ -25,7 +25,6 @@ resource "null_resource" "put_cloudwatch_event" {
     "aws_cloudwatch_event_rule.ebs_attach_rule",
     "aws_cloudwatch_event_target.ebs_attach",
     "aws_autoscaling_lifecycle_hook.aws_autoscaling_lifecycle_hook",
-    "aws_iam_policy_attachment.ssm_lambda",
   ]
 
   triggers {

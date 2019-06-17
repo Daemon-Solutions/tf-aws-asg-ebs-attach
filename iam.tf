@@ -1,5 +1,5 @@
 # Lambda policy for attaching EBS
-data "aws_iam_policy_document" "ebs_lambda" {
+data "aws_iam_policy_document" "ebs" {
   statement {
     actions = [
       "ec2:AttachVolume",
@@ -19,9 +19,7 @@ data "aws_iam_policy_document" "ebs_lambda" {
 }
 
 # Lambda policy for running SSM command
-data "aws_iam_policy_document" "ssm_lambda" {
-  count = "${var.enable_ssm}"
-
+data "aws_iam_policy_document" "ssm" {
   statement {
     actions = [
       "ssm:SendCommand",
@@ -45,16 +43,7 @@ data "aws_iam_policy_document" "ssm_lambda" {
   }
 }
 
-# Attach ssm policy to lambda role
-resource "aws_iam_policy" "ssm_lambda" {
-  count  = "${var.enable_ssm}"
-  name   = "${module.lambda.function_name}-ssm"
-  policy = "${data.aws_iam_policy_document.ssm_lambda.json}"
-}
-
-resource "aws_iam_policy_attachment" "ssm_lambda" {
-  count      = "${var.enable_ssm}"
-  name       = "${module.lambda.function_name}"
-  roles      = ["${module.lambda.role_name}"]
-  policy_arn = "${aws_iam_policy.ssm_lambda.arn}"
+data "aws_iam_policy_document" "lambda_policy" {
+  source_json   = "${data.aws_iam_policy_document.ebs.json}"
+  override_json = "${var.enable_ssm ? data.aws_iam_policy_document.ssm.json : ""}"
 }

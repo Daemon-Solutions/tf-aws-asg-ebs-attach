@@ -5,7 +5,7 @@ resource "random_string" "random" {
 }
 
 module "vpc" {
-  source             = "terraform-aws-modules/vpc/aws"
+  source             = "github.com/terraform-aws-modules/terraform-aws-vpc?ref=v1.66.0"
   name               = "terraform-asg-ebs-attach-${random_string.random.result}"
   cidr               = "10.0.0.0/24"
   azs                = ["${element(data.aws_availability_zones.available.names, 0)}"]

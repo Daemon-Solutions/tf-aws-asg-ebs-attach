@@ -1,6 +1,23 @@
 resource "aws_cloudwatch_event_rule" "ebs_attach_rule" {
-  description = "Trigger for lambda ebs attach"
+  description   = "Trigger for lambda ebs attach"
+  event_pattern = local.event_pattern
+}
 
+resource "aws_cloudwatch_event_target" "ebs_attach" {
+  rule = aws_cloudwatch_event_rule.ebs_attach_rule.name
+  arn  = module.lambda.function_arn
+}
+
+resource "aws_lambda_permission" "aws_lambda_permission" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.ebs_attach_rule.arn
+}
+
+# because terraform fmt breaks with heredocs: https://github.com/hashicorp/terraform/issues/21434
+locals {
   event_pattern = <<PATTERN
 {
   "source": [
@@ -21,17 +38,4 @@ resource "aws_cloudwatch_event_rule" "ebs_attach_rule" {
   }
 }
 PATTERN
-}
-
-resource "aws_cloudwatch_event_target" "ebs_attach" {
-  rule = "${aws_cloudwatch_event_rule.ebs_attach_rule.name}"
-  arn  = "${module.lambda.function_arn}"
-}
-
-resource "aws_lambda_permission" "aws_lambda_permission" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = "${module.lambda.function_name}"
-  principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.ebs_attach_rule.arn}"
 }

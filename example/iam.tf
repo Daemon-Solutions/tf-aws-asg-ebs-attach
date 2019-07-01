@@ -1,6 +1,6 @@
 resource "aws_iam_instance_profile" "instance_profile" {
   name = "terraform-asg-ebs-attach-${random_string.random.result}"
-  role = "${aws_iam_role.ebs_attach_role.name}"
+  role = aws_iam_role.ebs_attach_role.name
 
   lifecycle {
     create_before_destroy = true
@@ -14,21 +14,7 @@ resource "aws_iam_role" "ebs_attach_role" {
     create_before_destroy = true
   }
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
+  assume_role_policy = local.ebs_attach_role_heredoc
 }
 
 data "aws_iam_policy_document" "ssm_session_manager" {
@@ -80,10 +66,29 @@ data "aws_iam_policy_document" "ssm_session_manager" {
 
 resource "aws_iam_role_policy" "ssm_session_manager" {
   name   = "terraform-asg-ebs-attach-${random_string.random.result}"
-  role   = "${aws_iam_role.ebs_attach_role.id}"
-  policy = "${data.aws_iam_policy_document.ssm_session_manager.json}"
+  role   = aws_iam_role.ebs_attach_role.id
+  policy = data.aws_iam_policy_document.ssm_session_manager.json
 
   lifecycle {
     create_before_destroy = true
   }
+}
+
+# because terraform fmt breaks with heredocs: https://github.com/hashicorp/terraform/issues/21434
+locals {
+  ebs_attach_role_heredoc = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }

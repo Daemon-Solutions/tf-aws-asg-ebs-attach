@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "ssm" {
 
     resources = [
       "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
-      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/${aws_ssm_document.ssm.name}",
+      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/${aws_ssm_document.ssm[0].name}",
     ]
   }
 
@@ -44,6 +44,16 @@ data "aws_iam_policy_document" "ssm" {
 }
 
 data "aws_iam_policy_document" "lambda_policy" {
-  source_json   = "${data.aws_iam_policy_document.ebs.json}"
-  override_json = "${var.enable_ssm ? data.aws_iam_policy_document.ssm.json : ""}"
+  source_json   = data.aws_iam_policy_document.ebs.json
+  override_json = var.enable_ssm ? data.aws_iam_policy_document.ssm.json : ""
+}
+
+resource "aws_iam_role_policy" "lambda" {
+  name   = var.lambda_function_name
+  role   = module.lambda.role_name
+  policy = data.aws_iam_policy_document.lambda_policy.json
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }

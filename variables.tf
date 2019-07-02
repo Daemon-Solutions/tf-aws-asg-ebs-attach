@@ -32,7 +32,7 @@ variable "enable_ssm" {
 variable "ssm_document_name" {
   description = "Name for the SSM document"
   type        = string
-  default     = "tf-aws-asg-attach-mangage-disk"
+  default     = "tf-aws-asg-ebs-attach-manage-disk"
 }
 
 variable "ssm_document_format" {

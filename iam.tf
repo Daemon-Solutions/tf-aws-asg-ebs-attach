@@ -20,6 +20,7 @@ data "aws_iam_policy_document" "ebs" {
 
 # Lambda policy for running SSM command
 data "aws_iam_policy_document" "ssm" {
+  count = "${var.enable_ssm}"
   statement {
     actions = [
       "ssm:SendCommand",
@@ -45,5 +46,5 @@ data "aws_iam_policy_document" "ssm" {
 
 data "aws_iam_policy_document" "lambda_policy" {
   source_json   = "${data.aws_iam_policy_document.ebs.json}"
-  override_json = "${var.enable_ssm ? data.aws_iam_policy_document.ssm.json : ""}"
+  override_json = "${join("", data.aws_iam_policy_document.ssm.*.json)}"
 }

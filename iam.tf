@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "ebs" {
 
 # Lambda policy for running SSM command
 data "aws_iam_policy_document" "ssm" {
-  count = "${var.enable_ssm}"
+  count = var.enable_ssm == true ? 1 : 0
   statement {
     actions = [
       "ssm:SendCommand",
@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "ssm" {
 
     resources = [
       "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
-      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/${aws_ssm_document.ssm.name}",
+      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:document/${aws_ssm_document.ssm[0].name}",
     ]
   }
 
@@ -45,6 +45,6 @@ data "aws_iam_policy_document" "ssm" {
 }
 
 data "aws_iam_policy_document" "lambda_policy" {
-  source_json   = "${data.aws_iam_policy_document.ebs.json}"
-  override_json = "${join("", data.aws_iam_policy_document.ssm.*.json)}"
+  source_json   = data.aws_iam_policy_document.ebs.json
+  override_json = join("", data.aws_iam_policy_document.ssm.*.json)
 }

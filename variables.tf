@@ -1,16 +1,16 @@
 variable "lambda_function_name" {
   description = "Name for the lambda function"
-  type        = "string"
+  type        = string
 }
 
 variable "autoscaling_group_name" {
   description = "Name of the AutoscalingGroup to attach this Lambda function to"
-  type        = "string"
+  type        = string
 }
 
 variable "asg_tag" {
   description = "ASG tag key containing name of the tag key on EBS volumes"
-  type        = "string"
+  type        = string
 }
 
 variable "lambda_log_level" {
@@ -20,7 +20,7 @@ variable "lambda_log_level" {
 
 variable "lifecycle_hook_name" {
   description = "Name for the ASG LifecycleHook"
-  type        = "string"
+  type        = string
   default     = "lambda-ebs-attach"
 }
 
@@ -31,18 +31,18 @@ variable "enable_ssm" {
 
 variable "ssm_document_name" {
   description = "Name for the SSM document"
-  type        = "string"
+  type        = string
   default     = "tf-aws-asg-attach-mangage-disk"
 }
 
 variable "ssm_document_format" {
   description = "SSM document format. Possible values are YAML and JSON"
-  type        = "string"
+  type        = string
   default     = "YAML"
 }
 
 variable "ssm_document_path" {
   description = "Path to the SSM document"
-  type        = "string"
+  type        = string
   default     = ""
 }

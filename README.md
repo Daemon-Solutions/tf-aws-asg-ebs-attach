@@ -21,7 +21,7 @@ See example below or example folder.
 module "ebs_attach" {
   source                 = "/home/tf/tf-aws-asg-ebs-attach"
   lambda_function_name   = "lambda-ebs-attach"
-  autoscaling_group_name = "${module.myapp.asg_name}"
+  autoscaling_group_name = module.myapp.asg_name
   asg_tag                = "ebs_volumes"
   enable_ssm             = true
 }
@@ -30,7 +30,7 @@ module "ebs_attach" {
 module "myapp" {
   source  = "git::ssh://git@gogs.bashton.net/Bashton-Terraform-Modules/tf-aws-asg.git"
   name    = "my_app"
-  subnets = ["${element(module.vpc.private_subnets, 0)}"]
+  subnets = [element(module.vpc.private_subnets, 0)]
   [...]
 
   extra_tags = [
@@ -66,3 +66,10 @@ resource "aws_ebs_volume" "asg_0_2" {
   }
 }
 ```
+
+# Terraform version compatibility
+
+| Module version | Terraform version |
+|----------------|-------------------|
+| 1.x.x          | 0.12.x            |
+| 0.x.x          | 0.11.x            |

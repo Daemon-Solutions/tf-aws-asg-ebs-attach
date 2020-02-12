@@ -1,6 +1,6 @@
 resource "aws_iam_instance_profile" "instance_profile" {
   name = "terraform-asg-ebs-attach-${random_string.random.result}"
-  role = "${aws_iam_role.ebs_attach_role.name}"
+  role = aws_iam_role.ebs_attach_role.name
 
   lifecycle {
     create_before_destroy = true
@@ -80,8 +80,8 @@ data "aws_iam_policy_document" "ssm_session_manager" {
 
 resource "aws_iam_role_policy" "ssm_session_manager" {
   name   = "terraform-asg-ebs-attach-${random_string.random.result}"
-  role   = "${aws_iam_role.ebs_attach_role.id}"
-  policy = "${data.aws_iam_policy_document.ssm_session_manager.json}"
+  role   = aws_iam_role.ebs_attach_role.id
+  policy = data.aws_iam_policy_document.ssm_session_manager.json
 
   lifecycle {
     create_before_destroy = true

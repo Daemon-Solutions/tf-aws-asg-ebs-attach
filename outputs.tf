@@ -1,15 +1,15 @@
 output "lambda_function_name" {
-  value = "${module.lambda.function_name}"
+  value = module.lambda.function_name
 }
 
 output "lambda_function_arn" {
-  value = "${module.lambda.function_arn}"
+  value = module.lambda.function_arn
 }
 
 output "lambda_role_arn" {
-  value = "${module.lambda.role_arn}"
+  value = module.lambda.role_arn
 }
 
 output "lambda_role_name" {
-  value = "${module.lambda.role_name}"
+  value = module.lambda.role_name
 }
